@@ -8,7 +8,8 @@ $(function() {
   var lastScrollTop = 0;
   var scrollDir;
 
-  var timeline = new TimelineMax({ paused: true }).to(diagonalGroup, 1, {
+  var timeline = new Timeline
+  Max({ paused: true }).to(diagonalGroup, 1, {
     yPercent: -95
   });
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback }from 'react';
 import gsap from 'gsap';
+import g from '../utils/gsapScroll';
 // import gsap, { TweenMax, TimelineMax } from 'gsap';
 // import * as ScrollMagic from "scrollmagic";
 // import { ScrollMagicPluginGsap } from "scrollmagic-plugin-gsap";
@@ -8,7 +9,7 @@ import gsap from 'gsap';
 const ScrollingPage = ({ match }) => {
   let tl;
   let containerY;
-  let boxHeight;
+  // let boxHeight;
 
   // ===== 현재 위치 퍼센트
   const getScrollPercent = () => {
@@ -20,9 +21,9 @@ const ScrollingPage = ({ match }) => {
     const containerHeight = container.clientHeight;
     // const scPercent = Math.max((scrollY - containerY)  / (containerHeight), 0); // 지정한 컨테이너 엘리먼트 의 끝까지 스크롤 시 스크롤 비율.
     // const scPercent = Math.max(scrollY / (documentHeight - windowHeight), 0); // 전체 윈도우 스크롤 시 현재 스크롤 비율
-    const scPercent = Math.max((scrollY - containerY)  / (300), 0); // 지정한 길이만큼의 현재 스크롤 비율
+    const scPercent = Math.max((scrollY - containerY) / (300), 0); // 지정한 길이만큼의 현재 스크롤 비율
 
-    console.log('> ', scPercent, documentHeight,  windowHeight, containerHeight, containerY);
+    // console.log('> ', scPercent, documentHeight,  windowHeight, containerHeight, containerY);
     // const containerPercent = scrollY / ()
 
 
@@ -62,15 +63,21 @@ const ScrollingPage = ({ match }) => {
 
     containerY = container.offsetTop;
     tl = gsap.timeline({ paused: true });
-    tl.to(el, {duration: 3, y: 400, onComplete: () => console.log('> done')});
+    tl.to(el, {y: 400, onComplete: () => console.log('> done')});
+    // tl.to(el, {duration: 3, y: 400, onComplete: () => console.log('> done')});
+    // console.log('> >', tl);
+    g.go(
+      [tl],
+      a => console.log('> ddd : ', a)
+    )
 
 
-    console.log('> scrollPercent : ', getScrollPercent())
-    window.addEventListener('scroll', ()=>{
-      const { scPercent } = getScrollPercent();
-      // console.log('> scrollPercent : ', scPercent);
-      setTimeout(() => tl.progress(scPercent), 50)
-    });
+    // console.log('> scrollPercent : ', getScrollPercent())
+    // window.addEventListener('scroll', ()=>{
+    //   const { scPercent } = getScrollPercent();
+    //   // console.log('> scrollPercent : ', scPercent);
+    //   setTimeout(() => tl.progress(scPercent), 50);
+    // });
 
   }, []);
 
