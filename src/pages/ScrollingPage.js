@@ -66,7 +66,7 @@ const ScrollingPage = ({ match }) => {
     tl.to(el, {y: 400, onComplete: () => console.log('> done')});
 
     const tl2 = gsap.timeline({ paused: true });
-    tl2.to('#box2', {y: 300, x: 200, onComplete: () => console.log('> done2')});
+    tl2.fromTo('#box2', {x: '-100%'}, {y: 300, x: 200, onComplete: () => console.log('> done2')});
 
     const tl3 = gsap.timeline({ paused: true });
     tl3.to('#box3', {y: 300, rotation: 360, scale: 2.5, onComplete: () => console.log('> done3')});
@@ -74,9 +74,26 @@ const ScrollingPage = ({ match }) => {
     // console.log('> >', tl);
     // g.trigger([tl]);
     // g.progress([tl], { showIndicator: true, duration: 500 });
-    // g.progress([tl, tl2], { duration: 300, triggerYPercent: 30 });
-    g.progressTicker([tl, tl2], { duration: 300, triggerYPercent: 30 });
-    // g.progress([tl3], { duration: 500, triggerYPercent: 80 });
+    g.progress([tl, tl2], {
+      triggerEl: '#container',
+      fixedEl: '#fixed',
+      duration: 400,
+      triggerYPercent: 20,
+      smooth: 0.05,
+      showIndicator: true,
+      startIndicatorName: '시당근',
+      endIndicatorName: '끝당근',
+      triggerIndicatorName: '트리근',
+    });
+
+    // g.progress([tl3], {
+    //   triggerEl: '#box3',
+    //   showIndicator: true,
+    //   duration: 500,
+    //   smooth: 0.08,
+    //   triggerYPercent: 50
+    // });
+    // console.log('> ', t);
 
 
     // console.log('> scrollPercent : ', getScrollPercent())
@@ -101,14 +118,18 @@ const ScrollingPage = ({ match }) => {
         style={{ width:600, height: 800, margin: 'auto', backgroundColor: '#f5f5f5'}}
       >
         {/* ===== container ===== */}
-        <div className="container" id="container"
-          style={{ height: 500, border: '1px solid', display: 'flex'}}
-        >
-          <div className="box" id="box" style={{width:100, height: 100, background:'#ff9547'}}></div>
-          <div className="box2" id="box2" style={{width:100, height: 100, background:'blue'}}></div>
-          {/* <button onClick={play}>play</button> */}
+        <div id="fixed">
+          <div className="container" id="container"
+            style={{ height: 500, border: '1px solid', display: 'flex', overflow: 'hidden'}}
+          >
+            <div className="box" id="box" style={{width:100, height: 100, background:'#ff9547'}}></div>
+            <div className="box2" id="box2" style={{width:100, height: 100, background:'blue'}}></div>
+            {/* <button onClick={play}>play</button> */}
+          </div>
         </div>
       </div>
+
+
       <div className="box3" id="box3"
         style={{width:100, height: 100, background:'purple', margin: 'auto'}}
       ></div>

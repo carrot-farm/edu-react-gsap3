@@ -91,69 +91,198 @@ const getProgress = ({ startY, duration, triggerYPercent }) => {
 };
 
 
-// /** ============================================================
-//  * @ 스크롤시 파라메터 변환해서 전달
-//  ============================================================ */
-//  const convertEvtParmas = ({startY, duration, triggerYPercent, tl}) => {
-//   const scrollY = window.scrollY;
-//   const winHeight = window.innerHeight;
-//   const curProgress = getProgress({scrollY, startY, duration, winHeight, triggerYPercent});
-//   return ({
-//     winHeight,
-//     scrollY,
-//     curProgress,
-//   });
-// };
+/** ============================================================
+* @ 현재 프로그래스 셋팅
+============================================================ */
+const setCurProgress = curry((f, data) => {
+  data.curProgress = getProgress(data);
+  if(f) { f(data); }
+});
 
-const reduceTl = (tl, endProgress) => {
-  let progress = tl.progress();
-  progress += (endProgress - progress) * 0.05;
-  // console.log('> progress : ', endProgress, progress);
-  if(progress < endProgress) {
-    // reduceTl(progress, endProgress);
+
+
+/** ============================================================
+* @ 스무스 애니메이션
+============================================================ */
+const smoothProgress = (data) => {
+  data.ticker = () => {
+    const { curProgress, tl, smooth } = data;
+    if(curProgress !== undefined){
+      let progress = tl.progress();
+      progress += (curProgress - progress) * smooth;
+      tl.progress(progress);
+    }
+  };
+  gsap.ticker.add(data.ticker);
+}
+
+
+/** ============================================================
+* @ fixed 상태별 처리
+============================================================ */
+const fixedState = {};
+// # 애니메이션 시작 전
+fixedState.before = (data) => {
+  const {els} = data;
+  data.onFixed.status = 'before';
+  els.fixedWrapper.style.position = 'static';
+  els.fixedWrapper.style.width  = `auto`;
+  els.fixedWrapper.style.height  = `0px`;
+  els.fixedEl.style.position = 'relative';
+  els.fixedEl.style.top = `auto`;
+  els.fixedEl.style.width = `${data.onFixed.width}px`;
+  els.fixedEl.style.height = `${data.onFixed.height}px`;
+};
+
+// # 애니메이션 중
+fixedState.ing = (data) => {
+  const {els, triggerYPercent} = data;
+  data.onFixed = {
+    status: 'ing',
+    width: els.fixedEl.offsetWidth,
+    height : els.fixedEl.offsetHeight
+  };
+  els.fixedWrapper.style.position = 'relative';
+  els.fixedWrapper.style.width  = `${data.onFixed.width}px`;
+  els.fixedWrapper.style.height  = `${data.onFixed.height}px`;
+  els.fixedEl.style.position = `fixed`;
+  els.fixedEl.style.top = `${triggerYPercent}%`;
+  els.fixedEl.style.width = `${data.onFixed.width}px`;
+  els.fixedEl.style.height = `${data.onFixed.height}px`;
+};
+
+// # 애니메이션 완료
+fixedState.completed = (data) => {
+  const {els, duration} = data;
+  // _.log('> log : ', data.onFixed, els.fixedEl.offsetWidth);
+  data.onFixed = {
+    status: 'completed',
+    width: els.fixedEl.offsetWidth,
+    height : els.fixedEl.offsetHeight
+  };
+  els.fixedWrapper.style.position = 'relative';
+  els.fixedWrapper.style.width  = `${data.onFixed.width}px`;
+  els.fixedWrapper.style.height  = `${data.onFixed.height}px`;
+  els.fixedEl.style.position = `absolute`;
+  els.fixedEl.style.top = `${duration}px`;
+  els.fixedEl.style.width = `${data.onFixed.width}px`;
+  els.fixedEl.style.height = `${data.onFixed.height}px`;
+}
+
+
+
+/** ============================================================
+* @ 스크롤 이벤트 콜백
+* . removeEvenetListener을 하기 위함.
+============================================================ */
+const scrollEvtCallback = (f, data) => (evt) => {
+  if(f){ f(data); }
+  // _.log('> ', data.curProgress)
+  if(data.fixedEl) {
+    // # 시작전
+    if(data.curProgress <= 0 && data.onFixed.status !== 'before') {
+      fixedState.before(data);
+    }
+    // # 애니메이션 중
+    else if(data.curProgress > 0 && data.curProgress <= 1 && data.onFixed.status !== 'ing') {
+      fixedState.ing(data);
+    }
+    // # 완료
+    else if(data.curProgress > 1 && data.onFixed.status !== 'completed'){
+      fixedState.completed(data);
+    }
   }
 };
+
+/** ============================================================
+* @ 스크롤 이벤트 바인딩
+============================================================ */
+const bindScEvt = curry((f, data) => {
+  data.scrollEventFunc = scrollEvtCallback(f, data);
+  window.addEventListener('scroll', data.scrollEventFunc, false);
+});
+
+/** ============================================================
+* @ 이벤트 콜백 연결
+============================================================ */
+const bindEventCallback = (data) => {
+  const {tl, onStart, onUpdate} = data;
+
+  // # 시작 이벤트
+  tl.eventCallback('onStart', () => {
+    if(onStart) {
+      onStart(data);
+    }
+  });
+  // # 업데이트
+  if(onUpdate) { tl.eventCallback('onUpdate', () => onUpdate(data)); }
+
+  // # 완료 이벤트
+  tl.eventCallback('onComplete', () => {
+    // # fixedEl을 지정했을 경우
+    if(data.fixedEl) {
+      fixedState.completed(data);
+    }
+    // # 콜백 있을 경우 실행
+    if(data.onComplete) {
+      data.onComplete(data);
+    }
+    // # 애니메이션을 한번만 할 경우
+    if(data.once === true) {
+      kill(data);
+    }
+  });
+};
+
 
 /** ============================================================
  * @ 스크롤 이벤트
 ============================================================ */
 const evt = {};
 // ===== progress
-evt.progress = ({tl, curProgress}) => {
-  tl.progress(curProgress);
-};
-
-// ===== progressTicker
-evt.progressTicker = ({tl, curProgress, type}) => {
-  // tl.progress(curProgress);
-  _.log('> type : ', type)
+evt.progress = (data) => {
+  bindScEvt(
+    setCurProgress(
+      ({tl, curProgress, smooth}) => {if(smooth === 1){tl.progress(curProgress)}}
+    )
+  , data);
+  // # smooth 적용
+  if(data.smooth !== 1) {
+    smoothProgress(data);
+  }
+  return data;
 };
 
 // ===== trigger
-evt.trigger = ({tl, curProgress}) => {
-  (curProgress > 0) ? tl.play() : tl.reverse();
+evt.trigger = (data) => {
+  bindScEvt(
+    setCurProgress(
+      ({tl, curProgress}) => (curProgress > 0) ? tl.play() : tl.reverse()
+    )
+  , data);
+  return data;
 };
 
 
 /** ============================================================
   * @ indicator 엘리먼트 생성
 ============================================================ */
-const indicatorTemplate = ({startY, endY}) => {
-  return `
-    <div style="position:absolute;right:20px;top:${startY}px;overflow:visibie;white-space:nowrap;font-size:0.8rem;z-index:10000;text-align:right;">
-      <div style="padding:0 5px;border-bottom:1px solid;line-height:0.9rem;color:blue;min-width:20px;margin-top:-0.95rem">START</div>
-      ${endY ? `<div style="position:absolute;top:${endY}px;padding:0 5px;border-top:1px solid;line-height:0.9rem;color:red;min-width:20px;">END</div>` : ''}
-    </div>
-  `;
-};
+const fixedElWrapperTemplate = () =>
+  `<div style="top:auto;bottom:auto;left:auto;right:auto;margin:auto;display:block;width:auto;min-width:1px;line-height:0;height:0;"></div>`;
 
-const triggerTemplate = ({triggerYPercent}) => `
-  <div style="position:fixed;right:20px;top:${triggerYPercent}%;overflow:visible;white-space:nowrap;font-size:0.8rem;line-height:0.9rem;z-index:10001;">
+const indicatorTemplate = ({startY, endY, type, startIndicatorName, endIndicatorName}) =>
+  `<div style="position:absolute;right:20px;top:${startY}px;overflow:visible;white-space:nowrap;font-size:0.8rem;z-index:10000;text-align:right;">
+    <div style="padding:0 5px;border-bottom:1px solid;line-height:0.9rem;color:blue;min-width:20px;margin-top:-0.9rem">${startIndicatorName}</div>
+    ${type === 'progress' ? `<div style="position:absolute;top:${endY}px;padding:0 5px;border-top:1px solid;line-height:0.9rem;color:red;min-width:20px;">${endIndicatorName}</div>` : ''}
+  </div>`;
+
+const triggerTemplate = ({triggerYPercent, triggerIndicatorName}) =>
+  `<div style="position:fixed;right:20px;top:${triggerYPercent}%;overflow:visible;white-space:nowrap;font-size:0.8rem;line-height:0.9rem;z-index:10001;">
     <div style="color:green;line-height:0.95rem;border-bottom:1px solid;min-width:50px;">
-      <div style="position:absolute;top:-0.9rem;">TRIGGER</div>
+      <div style="position:absolute;top:-0.9rem;">${triggerIndicatorName}</div>
     </div>
-  </div>
-`;
+  </div>`;
+
 
 /** ============================================================
   * @ 텍스트를 엘리먼트로 변경.
@@ -166,93 +295,130 @@ const el = html => {
 
 
 /** ============================================================
+  * @ 다른 엘리먼트로 덮어 싸기
+============================================================ */
+const wrapEl = (_el, _wrapper) => {
+  _el.parentNode.insertBefore(_wrapper, _el);
+  _wrapper.appendChild(_el);
+};
+
+
+
+/** ============================================================
  * @ 엘리먼트내에 다른 엘리먼트 덧붙임.
 ============================================================ */
 const append = (parent, child) => parent.appendChild(child);
 
 
 /** ============================================================
-* @ gsap
-* gsap scroll 애니메이션 객체
+ * @ 시작
 ============================================================ */
-const gsapc = {};
-
-// =====
-gsapc.play = (type) => (tls, options) =>
-  go(
+const play = (type) => (tls, options) => {
+  const els = setElement(options); // 엘리먼트 셋팅
+  return go(
     tls,
-    L.map(gsapc.setOptions({...options, type})), // 옵션 셋팅
-    L.map(a => (gsapc.addScEvt(evt[type], a), a)), // 스크롤 이벤트 바인딩
-    L.map(a => {
-      gsap.ticker.add((...args) => {
-        if(a.curProgress !== undefined){
-          let progress = a.tl.progress();
-          progress += (a.curProgress - progress) * 0.05;
-          a.tl.progress(progress)
-          _.log('> ticker : ', a.curProgress, a.tl.progress(), a.curProgress)
-        }
-      })
-      return a;
-    }),
-    L.map(a => (a.showIndicator && gsapc.indicator(a), a)), // indicator 생성
+    L.map(setOptions({...options, els, type})), // 옵션 셋팅
+    L.map(a => (evt[type](a), a)), // 스크롤 이벤트 바인딩
+    L.map(a => (bindEventCallback(a), a)), // 이벤트 콜백 바인딩
+    L.map(a => (a.showIndicator && indicator(a), a)), // indicator 생성
     takeAll, // 전체 평가
+    a => (window.scrollBy(window.scrollX, 1), a), // 스크롤 이벤트
+    a => ({tls: a, killAll: () => killAll(a), els }) // 리턴 데이터 추가
   );
+};
 
-
-// ===== 시작
-gsapc.progress = gsapc.play('progress');
-gsapc.progressTicker = gsapc.play('progressTicker');
-gsapc.trigger = gsapc.play('trigger');
-
-
-// ===== 옵션 셋팅
-gsapc.setOptions = curry((_options, tl) => {
+/** ============================================================
+ * @ 옵션셋팅
+============================================================ */
+const setOptions = curry(({els, ..._options}, tl) => {
   const options = {
     type: 'progress', // 애니메이션 방식("trigger"[트리거로 한번만 실행], "progress"[duration동안 실행])
-    startY: tl._recent._targets[0].offsetTop, // 애니메이션 시작 좌표(px)
-    duration: 100, // 애니메이션 스크롤 기간(px)
+    triggerEl: undefined, // 트리거의 기준이 되는 엘리먼트.
+    fixedEl: undefined, // onComplete 발생시까지 고정된다.
+    startY: els.triggerEl.offsetTop, // 애니메이션 시작 좌표(px)
     triggerYPercent: 50, // 트리거 y 축 좌표(%)
     showIndicator: false, // indicator 표시 유무
+    duration: 100, // 애니메이션 스크롤 기간(px, progress only)
+    smooth: 1, // 부드럽게 움직임 옵션 추가.(progress only: 0.01 ~ 1)
+    once: false, // 한번만 애니메이션 함.(onComplete 이후 kill)
+    onStart: undefined, // 애니메이션 start 시 이벤트
+    onUpdate: undefined, // update 시 지속 이벤트
+    onComplete: undefined, // 애니메이션 완료 시 이벤트
+    onFixed: {status: 'ready'}, // fixedEl 시 상태 저장값. (ready, before, ing, completed)
+    startIndicatorName: 'start',
+    endIndicatorName: 'end',
+    triggerIndicatorName: 'trigger',
     ..._options,
   };
-  // _.log('> ', tl)
-  // # trigger 일 경우 duration 없음.
-  if(options.type === 'trigger') {
-    options.duration = 0;
-  }
+  // _.log('> ', options.type)
 
   return {
     tl,
+    els,
     ...options,
   };
 });
 
 
-// ===== 이벤트 바인딩
-gsapc.addScEvt = (f, data) => {
+/** ============================================================
+ * @ 엘리먼트 셋팅
+============================================================ */
+const setElement = ({triggerEl, fixedEl}) => {
+  const els = {}
+  els.triggerEl = document.querySelector(triggerEl);
 
-  window.addEventListener('scroll', evt => {
-    data.curProgress = getProgress(data);
-    f(data)
-  }, false);
+  // # 고정 엘리먼트.
+  if(fixedEl) {
+    els.fixedEl = document.querySelector(fixedEl); // fixed 엘리먼트 선택
+    els.fixedWrapper = el(fixedElWrapperTemplate({height: els.fixedEl.offsetHeight}));
+    wrapEl(els.fixedEl, els.fixedWrapper);
+  }
 
-  return data;
-};
+  return els;
+}
 
 
-// ===== indicator 생성
-gsapc.indicator = ({startY, duration, triggerYPercent}) => {
-  // console.log('> indicator : ');
+/** ============================================================
+ * @ indicator 생성
+============================================================ */
+const indicator = ({startY, duration, triggerYPercent, type,
+  startIndicatorName, endIndicatorName, triggerIndicatorName}) => {
+  // console.log('> indicator : ', endIndicatorName);
   // # 인디케이터 생성
   append(document.body,
-    el(indicatorTemplate({startY, endY: duration})));
+    el(indicatorTemplate({startY, endY: duration, type, startIndicatorName, endIndicatorName})));
 
   // # 트리거 생성.
   append(document.body,
-    el(triggerTemplate({triggerYPercent})));
+    el(triggerTemplate({triggerYPercent, triggerIndicatorName})));
 };
 
 
+/** ============================================================
+ * @ 모든 이벤트를 언바인딩 시키고 작동을 멈춘다.
+============================================================ */
+const killAll = (data) => {
+  for(const a of data) {
+    kill(a);
+  }
+};
+
+const kill = ({tl, scrollEventFunc}) => {
+  window.removeEventListener('scroll', scrollEventFunc);
+  tl.clear();
+  tl.kill();
+}
+
+
+/** ============================================================
+* @ 외부 노출 객체
+* gsap scroll 애니메이션 객체
+============================================================ */
+const gsapc = {};
+
+// ===== 타입별 메소드`
+gsapc.progress = play('progress');
+gsapc.trigger = play('trigger');
 
 
 export default gsapc;
