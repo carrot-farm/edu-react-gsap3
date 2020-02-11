@@ -320,8 +320,8 @@ const play = (type) => (tls, options) => {
     L.map(setOptions({...options, els, type})), // 옵션 셋팅
     L.map(a => (evt[type](a), a)), // 스크롤 이벤트 바인딩
     L.map(a => (bindEventCallback(a), a)), // 이벤트 콜백 바인딩
-    L.map(a => (a.showIndicator && indicator(a), a)), // indicator 생성
     takeAll, // 전체 평가
+    tls => (tls[0].showIndicator && indicator(tls[0]), tls), // indicator 생성
     a => (window.scrollBy(window.scrollX, 1), a), // 스크롤 이벤트
     a => ({tls: a, killAll: () => killAll(a), els }) // 리턴 데이터 추가
   );
