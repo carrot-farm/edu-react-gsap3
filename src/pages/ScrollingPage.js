@@ -65,8 +65,9 @@ const ScrollingPage = ({ match }) => {
     tl = gsap.timeline({ paused: true });
     tl.to(el, {y: 400, onComplete: () => console.log('> done')});
 
-    const tl2 = gsap.timeline({ paused: true });
-    tl2.fromTo('#box2', {x: '-100%'}, {y: 300, x: 200, onComplete: () => console.log('> done2')});
+    const tl2 = gsap.timeline();
+    tl2.fromTo('#box2', {x: '-=200px'}, {y: 300, x: 200, onComplete: () => console.log('> done2')});
+    tl2.pause();
 
     const tl3 = gsap.timeline({ paused: true });
     tl3.to('#box3', {y: 300, rotation: 360, scale: 2.5, onComplete: () => console.log('> done3')});
@@ -115,12 +116,12 @@ const ScrollingPage = ({ match }) => {
         ScrollingPage
       </p>
       <div className="root-container"
-        style={{ width:600, height: 800, margin: 'auto', backgroundColor: '#f5f5f5'}}
+        style={{ width:600, height: 900, margin: 'auto', backgroundColor: '#f5f5f5'}}
       >
         {/* ===== container ===== */}
         <div id="fixed">
           <div className="container" id="container"
-            style={{ height: 500, border: '1px solid', display: 'flex', overflow: 'hidden'}}
+            style={{ height: 500, border: '1px solid', display: 'flex'}}
           >
             <div className="box" id="box" style={{width:100, height: 100, background:'#ff9547'}}></div>
             <div className="box2" id="box2" style={{width:100, height: 100, background:'blue'}}></div>
