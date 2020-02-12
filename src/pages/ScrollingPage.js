@@ -1,7 +1,7 @@
 import React, { useEffect }from 'react';
 import gsap from 'gsap';
 import g from '../utils/gsapScroll';
-import { opening, wallWoman } from '../utils/animation';
+import { opening, dropBottle } from '../utils/animation';
 
 const ScrollingPage = ({ match }) => {
   // ===== show `Lock n Lock`
@@ -17,6 +17,9 @@ const ScrollingPage = ({ match }) => {
 
     // # 오프닝
     opening({ $LnLText });
+
+    // # 텀블러 떨어지기
+    dropBottle();
 
 
   }, []);
@@ -55,13 +58,37 @@ const ScrollingPage = ({ match }) => {
             <img className="pink-bottle-img" src="/images/pink_bottle.jpg" alt="" />
           </div>
 
-          {/* 블라인드 배경 */}
+          {/* # 블라인드 배경 */}
           <div className="blind-bg" />
         </div>
       </div>
 
-      {/* ===== 텀블러 드롭 애니메이션 ===== */}
+      {/* ===== 텀블러 드롭 섹션 ===== */}
       <div id="section-drop-bottle" className="section-drop-bottle" >
+
+        <div className="left-drop-bottle-container">
+          {/* # 왼쪽  */}
+          <h3 className="left-drop-text-container">
+            <span className="left-drop-text">감</span>
+            <span className="left-drop-text">각</span>
+            <span className="left-drop-text">적</span>
+            <br />
+            <span className="left-drop-text">라</span>
+            <span className="left-drop-text">인</span>
+            <span className="left-drop-text">으</span>
+            <span className="left-drop-text">로</span>
+          </h3>
+          <img className="left-drop-bottle_table" src="/images/white-table.png" alt="white table" />
+          <img className="left-drop-bottle_handle" src="/images/bus_handle_ring-removebg-preview.png" alt="bus handle" />
+          <img className="left-drop-bottle_blue-bottle" src="/images/blue_bottle.png" alt="blue bottle" />
+        </div>
+
+        {/* # 오른쪽  */}
+        <div className="right-drop-text-container">
+          <img className="right-drop-bottle_table" src="/images/white-table.png" alt="white table" />
+          <img className="right-drop-bottle_blue-bottle" src="/images/blue_bottle.png" alt="blue bottle" />
+        </div>
+
       </div>
     </div>
   );

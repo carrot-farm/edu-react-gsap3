@@ -1,7 +1,7 @@
 #scrolling-page-root {
   display: block;
   width: 100%;
-  height: 6000px;
+  /* height: 6000px; */
   overflow: hidden;
 }
 .fixed-container {
@@ -14,9 +14,9 @@
 /* ===== 블라인드 섹션 ===== */
 .section-blind {
   position: relative;
-  border: 1px solid;
+  /* border: 1px solid; */
   width: 100%;
-  height: calc(100vh + 2500px);
+  height: calc(100vh + 3000px);
 }
 .blind-bg {
   width: 100%;
@@ -33,6 +33,7 @@
   width: 100%;
   text-align: center;
   z-index: 10;
+  /* opacity: 0; */
 }
 .main-text > span {
   display: inline-block;
@@ -82,4 +83,85 @@
 }
 .pink-bottle-img {
   position: absolute;
+}
+
+
+/* ===== 텀블러 드롭 섹션 ===== */
+#section-drop-bottle {
+  /* background-color: #f5f5f5; */
+  width: 100%;
+  height: 800px;
+  position: relative;
+}
+
+/*  # 왼쪽 텀블러 드롭 */
+.left-drop-bottle-container {
+  /* border: 1px solid;
+  box-sizing: border-box; */
+  position: absolute;
+  top: calc(50% - 250px);
+  left: 0;
+  width: 700px;
+  height: 500px;
+  background: #efe6de;
+  overflow: hidden;
+  clip: rect(250px, 800px, 250px, 0px);
+}
+.left-drop-bottle_table {
+  position: absolute;
+  top: -20%;
+  left: -390px;
+  transform: rotate(90deg) scale(1.4);
+}
+.left-drop-bottle_handle {
+  position: absolute;
+  left: 78%;
+  top: 10px;
+  transform: rotate(90deg) scale(0.7);
+  transform-origin: center top;
+}
+.left-drop-bottle_blue-bottle {
+  position: absolute;
+  top: -160px;
+  left: 70px;
+  transform: rotate(90deg) scale(0.8);
+  transform-origin: center bottom;
+}
+/*  # 텍트스`감각적 라인으로` */
+.left-drop-text-container {
+  position: absolute;
+  display: block;
+  top: 28%;
+  left: 177px;
+  z-index: 1;
+  text-align: left;
+}
+.left-drop-text-container span{
+  display: inline-block;
+  color: #999999;
+  font-size: 5rem;
+  font-weight: 200;
+}
+
+/*  # 오른쪽 컨테이너` */
+.right-drop-text-container {
+  position: absolute;
+  right: 0;
+  width: 50%;
+  height: 800px;
+  background-color: #efe6de;
+  overflow: hidden;
+}
+.right-drop-bottle_table {
+  position: absolute;
+  bottom: -510px;
+  right: 20px;
+  transform: scale(1.9);
+}
+.right-drop-bottle_blue-bottle {
+  position: absolute;
+  left: 50%;
+  bottom: 50px;
+  margin-left: -50px;
+  transform: scale(1.1);
 }
