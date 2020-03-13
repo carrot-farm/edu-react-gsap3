@@ -89,9 +89,6 @@ video {
 	font-weight: 400;
 	font-family: 'Noto Sans KR', sans-serif;
 	color: inherit;
-	-webkit-tap-highlight-color: transparent;
-  touch-action: none;
-  color: #333;
 }
 /* HTML5 display-role reset for older browsers */
 article,
